@@ -10,6 +10,7 @@ app.title("Port Scanner")
 app.configure(fg_color="#212529")
 app.geometry("500x500")
 
+open_ports = []
 result_queue = queue.Queue()
 
 
@@ -26,7 +27,7 @@ def scan_port(target_ip, ports):
     result = so.connect_ex((target_ip, ports))
 
     if result == 0:
-        result_queue.put(("[+] Port {} is open\n".format(ports)))
+        result_queue.put(ports)
 
     so.close()
 
@@ -44,13 +45,25 @@ logo_image = customtkinter.CTkImage(
 
 
 def check_queue():
+
+    new_data = False
+
     while True:
         try:
             message = result_queue.get_nowait()
-            result_box.insert("end", message)
+            open_ports.append(message)
+
+            new_data = True
 
         except queue.Empty:
             break
+
+    if new_data:
+        open_ports.sort()
+        result_box.delete("1.0", "end")
+
+        for port in open_ports:
+            result_box.insert("end", "[+] Port {} is open\n".format(port))
 
     app.after(100, check_queue)
 
