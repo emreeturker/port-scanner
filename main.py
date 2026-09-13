@@ -17,6 +17,17 @@ result_queue = queue.Queue()
 
 def port_scanner():
     target_ip = ip_entry.get()
+
+    if target_ip == "":
+        status_info.configure(text="Target IP cannot be empty!", text_color="red")
+        return
+
+    try:
+        socket.inet_aton(target_ip)
+    except socket.error:
+        status_info.configure(text="Target IP is in an invalid format!", text_color="red")
+        return
+
     result_box.delete("1.0", "end")
     open_ports.clear()
     status_info.configure(text="Scanning for open ports...", text_color="blue")
@@ -83,12 +94,12 @@ ip_entry.pack()
 
 
 button = customtkinter.CTkButton(app, text="Target", command=start_scan_thread)
-button.configure(fg_color="red")
+button.configure(fg_color="red", hover_color="red", width=15)
 button.pack(padx=20, pady=20)
 
 
 result_label = customtkinter.CTkLabel(app, text="Result")
-result_label.configure(font=("Arial", 17))
+result_label.configure(font=("Arial", 17),text_color="green")
 result_label.pack()
 
 
