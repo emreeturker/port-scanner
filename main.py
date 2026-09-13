@@ -9,7 +9,7 @@ import queue
 app = customtkinter.CTk()
 app.title("Port Scanner")
 app.configure(fg_color="#212529")
-app.geometry("500x500")
+app.geometry("500x600")
 
 open_ports = []
 result_queue = queue.Queue()
@@ -19,11 +19,13 @@ def port_scanner():
     target_ip = ip_entry.get()
     result_box.delete("1.0", "end")
     open_ports.clear()
+    status_info.configure(text="Scanning for open ports...", text_color="blue")
 
     with ThreadPoolExecutor(max_workers=100) as executor:
         for port in range(1, 65535):
             executor.submit(scan_port, target_ip, port)
 
+    status_info.configure(text="Port scan completed", text_color="green")
 
 def scan_port(target_ip, ports):
     so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -86,13 +88,18 @@ button.pack(padx=20, pady=20)
 
 
 result_label = customtkinter.CTkLabel(app, text="Result")
-result_label.configure(font=("Arial", 15))
+result_label.configure(font=("Arial", 17))
 result_label.pack()
 
 
 result_box = customtkinter.CTkTextbox(app, width=250, height=150)
 result_box.configure(fg_color="black")
 result_box.pack()
+
+
+status_info = customtkinter.CTkLabel(app, text="Waiting for scan")
+status_info.configure(font=("Arial", 15),text_color="yellow")
+status_info.pack()
 
 
 check_queue()
