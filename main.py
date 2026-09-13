@@ -5,6 +5,7 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 import queue
 
+
 app = customtkinter.CTk()
 app.title("Port Scanner")
 app.configure(fg_color="#212529")
@@ -16,6 +17,9 @@ result_queue = queue.Queue()
 
 def port_scanner():
     target_ip = ip_entry.get()
+    result_box.delete("1.0", "end")
+    open_ports.clear()
+
     with ThreadPoolExecutor(max_workers=100) as executor:
         for port in range(1, 65535):
             executor.submit(scan_port, target_ip, port)
