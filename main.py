@@ -31,12 +31,14 @@ def port_scanner():
     result_box.delete("1.0", "end")
     open_ports.clear()
     status_info.configure(text="Scanning for open ports...", text_color="blue")
+    button.configure(state="disabled")
 
     with ThreadPoolExecutor(max_workers=100) as executor:
         for port in range(1, 65535):
             executor.submit(scan_port, target_ip, port)
 
     status_info.configure(text="Port scan completed", text_color="green")
+    button.configure(state="active")
 
 def scan_port(target_ip, ports):
     so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
