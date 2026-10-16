@@ -13,6 +13,8 @@ app.geometry("500x600")
 
 open_ports = []
 result_queue = queue.Queue()
+progress_queue = queue.Queue()
+scanned_count = 0
 
 
 def port_scanner():
@@ -30,7 +32,11 @@ def port_scanner():
 
     result_box.delete("1.0", "end")
     open_ports.clear()
+    global scanned_count
+    scanned_count = 0
     status_info.configure(text="Scanning for open ports...", text_color="blue")
+    progress_bar.pack(pady=10, before=result_box)
+    progress_bar.set(0)
     button.configure(state="disabled")
 
     with ThreadPoolExecutor(max_workers=100) as executor:
@@ -53,6 +59,7 @@ def scan_port(target_ip, ports):
 
     finally:
         so.close()
+        progress_queue.put(1)
 
 
 def start_scan_thread():
@@ -70,6 +77,7 @@ logo_image = customtkinter.CTkImage(
 def check_queue():
 
     new_data = False
+    global scanned_count
 
     while True:
         try:
@@ -88,6 +96,15 @@ def check_queue():
         for port in open_ports:
             result_box.insert("end", "[+] Port {} is open\n".format(port))
 
+    while True:
+        try:
+            progress = progress_queue.get_nowait()
+            scanned_count += 1
+        except queue.Empty:
+            break
+
+    progress_bar.set(scanned_count / 65535)
+
     app.after(100, check_queue)
 
 
@@ -104,19 +121,17 @@ button.configure(fg_color="red", hover_color="red", width=15)
 button.pack(padx=20, pady=20)
 
 
-result_label = customtkinter.CTkLabel(app, text="Result")
-result_label.configure(font=("Arial", 17),text_color="green")
-result_label.pack()
+status_info = customtkinter.CTkLabel(app, text="Waiting for scan")
+status_info.configure(font=("Arial", 15),text_color="yellow")
+status_info.pack()
+
+
+progress_bar = customtkinter.CTkProgressBar(app)
 
 
 result_box = customtkinter.CTkTextbox(app, width=250, height=150)
 result_box.configure(fg_color="black")
 result_box.pack()
-
-
-status_info = customtkinter.CTkLabel(app, text="Waiting for scan")
-status_info.configure(font=("Arial", 15),text_color="yellow")
-status_info.pack()
 
 
 check_queue()
