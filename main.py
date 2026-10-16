@@ -21,30 +21,30 @@ def port_scanner():
     target_ip = ip_entry.get()
 
     if target_ip == "":
-        status_info.configure(text="Target IP cannot be empty!", text_color="red")
+        app.after(0, lambda: status_info.configure(text="Target IP cannot be empty!", text_color="red"))
         return
 
     try:
         socket.inet_aton(target_ip)
     except socket.error:
-        status_info.configure(text="Target IP is in an invalid format!", text_color="red")
+        app.after(0, lambda: status_info.configure(text="Target IP is in an invalid format!", text_color="red"))
         return
 
     result_box.delete("1.0", "end")
     open_ports.clear()
     global scanned_count
     scanned_count = 0
-    status_info.configure(text="Scanning for open ports...", text_color="blue")
-    progress_bar.pack(pady=10, before=result_box)
-    progress_bar.set(0)
-    button.configure(state="disabled")
+    app.after(0, lambda: status_info.configure(text="Scanning for open ports...", text_color="blue"))
+    app.after(0, lambda: progress_bar.pack(pady=10, before=result_box))
+    app.after(0, lambda: progress_bar.set(0))
+    app.after(0, lambda: button.configure(state="disabled"))
 
     with ThreadPoolExecutor(max_workers=100) as executor:
         for port in range(1, 65536):
             executor.submit(scan_port, target_ip, port)
 
-    status_info.configure(text="Port scan completed", text_color="green")
-    button.configure(state="active")
+    app.after(0, lambda: status_info.configure(text="Port scan completed", text_color="green"))
+    app.after(0, lambda: button.configure(state="active"))
 
 
 def scan_port(target_ip, ports):
